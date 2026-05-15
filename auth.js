@@ -3,7 +3,7 @@
 // ============================================================
 
 const SESSION_KEY = 'df_user';
-const ADMIN_EMAIL = 'the.furtive.guys@gmail.com';
+const ADMIN_EMAIL = 'leoazex20@gmail.com';
 
 // Supabase Configuration (Public Anon Key)
 const SUPABASE_URL = "https://pcmaxibgvpatazpxuqkd.supabase.co";
@@ -195,7 +195,7 @@ function redirectIfLoggedIn(destination = 'index.html') {
 
 function initGoogleAuth({ onSuccess, onError } = {}) {
     google.accounts.id.initialize({
-        client_id: '452977917704-rodjcu8c5kh9f37rt2oam93necl14emo.apps.googleusercontent.com',
+        client_id: '466158961924-9mo566olgnpeq0jds34ebqlaqss2954j.apps.googleusercontent.com',
         locale: 'fr',
         callback: async (response) => {
             const payload = parseJwt(response.credential);
