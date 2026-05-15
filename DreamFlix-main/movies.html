@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamFlix — Movies</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lenis@1.1.2/dist/lenis.min.js"></script>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div id="sidebar-placeholder"></div>
+
+<div class="df-page df-page-with-sidebar">
+    <div class="page-shell">
+        <h1>Movies</h1>
+        <p class="page-subtitle">Films & Cinematic Experiences</p>
+
+        <div class="chips">
+            <div class="chip active">All</div>
+            <div class="chip">Action</div>
+            <div class="chip">Drama</div>
+            <div class="chip">Sci-Fi</div>
+            <div class="chip">Comedy</div>
+        </div>
+
+        <div class="df-grid" id="movies-grid">
+            <!-- Dynamic content here -->
+        </div>
+
+        <div class="empty-state" id="empty-movies" style="display:none">
+            <div class="icon" style="font-size: 5rem;">🎥</div>
+            <h3>Aucun film disponible</h3>
+            <p>Le catalogue de films est en cours d'expansion. Revenez bientôt !</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="nav.js"></script>
+<script src="script.js"></script>
+
+<script>
+    async function loadMovies() {
+        if (typeof DFAuth === 'undefined' || !DFAuth._supabase) return;
+        const _sb = DFAuth._supabase;
+        const { data, error } = await _sb.from('content').select('*').eq('category', 'Movies').order('created_at', { ascending: false });
+        
+        const grid = document.getElementById('movies-grid');
+        const empty = document.getElementById('empty-movies');
+        grid.innerHTML = '';
+
+        if (error || !data || data.length === 0) {
+            empty.style.display = 'block';
+            grid.style.display = 'none';
+        } else {
+            empty.style.display = 'none';
+            grid.style.display = 'grid';
+            data.forEach(item => {
+                grid.appendChild(DFAuth.UI.createCard(item, true));
+            });
+        }
+    }
+    window.addEventListener('load', loadMovies);
+</script>
+</body>
+</html>
