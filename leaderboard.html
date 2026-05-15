@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamFlix — Classement</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div id="sidebar-placeholder"></div>
+
+<div class="df-page df-page-with-sidebar">
+    <div class="page-shell">
+        <h1 class="leaderboard-title">
+            <i class="fas fa-trophy" style="color:#FFD700"></i>
+            Classement de Fidélité
+            <span style="font-size:0.65rem; color:var(--brand); text-transform:uppercase; letter-spacing:1px; background:rgba(229, 9, 20, 0.1); padding:4px 10px; border-radius:50px; border:1px solid rgba(229, 9, 20, 0.2)" id="live-indicator">
+                <i class="fas fa-sync fa-spin"></i> Direct
+            </span>
+        </h1>
+        <p class="page-subtitle">Récompensant les fans les plus actifs. Chaque minute passée sur DreamFlix compte !</p>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:20px;margin-top:40px;overflow-x:auto">
+            <table class="leaderboard-table">
+                <thead class="leaderboard-header">
+                    <tr>
+                        <th style="width:80px">Rang</th>
+                        <th>Utilisateur</th>
+                        <th class="hide-mobile">Abonnement</th>
+                        <th style="text-align:right">Loyauté (Temps)</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Skeleton / Loading -->
+                    <tr><td colspan="4" style="text-align:center;padding:50px;color:var(--muted)">Chargement des champions...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="nav.js"></script>
+<script>
+    async function loadLeaderboard() {
+        if (!DFAuth._supabase) return;
+        const tbody = document.getElementById('leaderboard-body');
+
+        try {
+            const { data: profiles, error } = await DFAuth._supabase
+                .from('profiles')
+                .select('*')
+                .order('watch_duration_seconds', { ascending: false })
+                .limit(50);
+
+            if (error) throw error;
+
+            const blacklist = ['Coline CAMPISTROUS', 'Kélyann Charolais', 'KÃ©lyann Charolais'];
+            const filteredProfiles = profiles.filter(p => !blacklist.includes(p.full_name));
+
+            tbody.innerHTML = '';
+            filteredProfiles.forEach((p, idx) => {
+                const rank = idx + 1;
+                const hours = Math.floor(p.watch_duration_seconds / 3600);
+                const mins = Math.floor((p.watch_duration_seconds % 3600) / 60);
+                
+                const tr = document.createElement('tr');
+                tr.className = 'leaderboard-row';
+                
+                // Style Logic
+                let nameClass = '';
+                let crown = '';
+                let subLabel = '<span style="color:var(--muted);font-size:0.7rem">FREE</span>';
+                
+                if (p.subscription_type === 'GOLD') {
+                    nameClass = 'user-gold';
+                    subLabel = '<span style="color:#ff3c00;font-size:0.7rem;font-weight:700">GOLD</span>';
+                } else if (p.subscription_type === 'DIAMANT') {
+                    nameClass = 'user-diamant';
+                    crown = ' <i class="fas fa-crown crown-icon"></i>';
+                    subLabel = '<span style="color:cyan;font-size:0.7rem;font-weight:700">DIAMANT PRO</span>';
+                }
+
+                const avatar = p.avatar_url || 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png';
+
+                tr.innerHTML = `
+                    <td class="leaderboard-item">
+                        <div class="rank-badge rank-${rank <= 3 ? rank : ''}">${rank}</div>
+                    </td>
+                    <td class="leaderboard-item">
+                        <div style="display:flex;align-items:center;gap:15px">
+                            <img src="${avatar}" style="width:36px;height:36px;border-radius:10px;object-fit:cover">
+                            <div class="${nameClass}">${p.full_name || 'Utilisateur'} ${crown}</div>
+                        </div>
+                    </td>
+                    <td class="leaderboard-item hide-mobile">
+                        ${subLabel}
+                    </td>
+                    <td class="leaderboard-item" style="text-align:right;font-weight:700">
+                        ${hours}h ${mins}min
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (e) {
+            console.error('Leaderboard load failed:', e);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:50px;color:var(--brand)">Erreur lors du chargement du classement.</td></tr>';
+        }
+    }
+
+    loadLeaderboard();
+    
+    // Auto-refresh every 10 minutes
+    setInterval(() => {
+        console.log('[Leaderboard] Refreshing rankings...');
+        loadLeaderboard();
+    }, 600000);
+</script>
+</body>
+</html>

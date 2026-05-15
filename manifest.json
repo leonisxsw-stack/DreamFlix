@@ -1,0 +1,18 @@
+{
+  "name": "DreamFlix",
+  "short_name": "DreamFlix",
+  "description": "DreamFlix — Votre plateforme de streaming Elite.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#E50914",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "img/logo_dreamflix.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

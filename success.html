@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamFlix — Paiement Réussi</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: #050505; 
+            color: #fff; 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .success-box { 
+            text-align: center; 
+            max-width: 500px; 
+            padding: 60px; 
+            background: rgba(255,255,255,0.02); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 40px; 
+            backdrop-filter: blur(20px); 
+            transform: scale(0.9);
+            opacity: 0;
+            animation: appear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes appear { to { transform: scale(1); opacity: 1; } }
+
+        .success-icon { 
+            font-size: 5rem; 
+            color: #46d369; 
+            margin-bottom: 30px; 
+            filter: drop-shadow(0 0 20px rgba(70, 211, 105, 0.4)); 
+        }
+        h1 { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            margin-bottom: 15px; 
+            background: linear-gradient(135deg, #fff, #888); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        p { 
+            color: #888; 
+            line-height: 1.6; 
+            margin-bottom: 40px; 
+        }
+        .plan-badge { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            border-radius: 50px; 
+            font-weight: 900; 
+            letter-spacing: 1px; 
+            font-size: 0.8rem; 
+            text-transform: uppercase; 
+            margin-bottom: 20px; 
+        }
+        .GOLD { background: rgba(255, 60, 0, 0.2); color: #ff3c00; border: 1px solid #ff3c00; }
+        .DIAMANT { background: rgba(0, 255, 255, 0.2); color: #00ffff; border: 1px solid #00ffff; }
+        
+        .loader-bar { 
+            width: 100%; 
+            height: 4px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 2px; 
+            overflow: hidden; 
+            position: relative; 
+        }
+        .loader-fill { 
+            height: 100%; 
+            background: var(--brand); 
+            width: 0%; 
+            transition: width 3s linear; 
+        }
+    </style>
+</head>
+<body>
+    <div class="success-box">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <div id="plan-label" class="plan-badge">Activation en cours...</div>
+        <h1>Paiement Confirmé !</h1>
+        <p>Bienvenue parmi l'élite de DreamFlix. Votre compte est en train d'être promu vers son nouveau rang de prestige.</p>
+        
+        <div class="loader-bar">
+            <div class="loader-fill" id="loader"></div>
+        </div>
+        <div style="margin-top: 15px; color: #444; font-size: 0.75rem;">Synchronisation avec Supabase...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script>
+        window.addEventListener('load', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const plan = urlParams.get('plan');
+            const label = document.getElementById('plan-label');
+            const loader = document.getElementById('loader');
+            const user = DFAuth.getUser();
+
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (plan) {
+                // Clean input for display
+                const safePlan = plan.toUpperCase();
+                label.innerText = `GRADE : ${safePlan}`;
+                label.className = `plan-badge ${safePlan}`;
+                
+                // Polling: On interroge Supabase toutes les 2 secondes
+                console.log("Démarrage de la vérification pour le plan : " + safePlan);
+                const checkInterval = setInterval(async () => {
+                    const { data: profile, error } = await DFAuth._supabase
+                        .from('profiles')
+                        .select('subscription_type')
+                        .eq('id', user.sub)
+                        .single();
+
+                    if (profile && (profile.subscription_type === safePlan || profile.subscription_type === plan)) {
+                        console.log("Paiement validé par le Webhook !");
+                        clearInterval(checkInterval);
+                        loader.style.width = '100%';
+                        setTimeout(() => {
+                            // Rafraîchir la session locale avant de rediriger
+                            const updatedUser = { ...user, plan: safePlan };
+                            localStorage.setItem('df_user', JSON.stringify(updatedUser));
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    }
+                }, 2000);
+
+                // Petit timeout de sécurité
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    const statusText = document.querySelector('div[style*="Synchronisation"]');
+                    if (statusText && loader.style.width !== '100%') {
+                        statusText.innerHTML = "La synchronisation est un peu longue... <br><button onclick='location.reload()' style='background:none;border:1px solid #444;color:#888;padding:5px 10px;margin-top:10px;cursor:pointer;border-radius:10px'>Réessayer</button>";
+                    }
+                }, 30000);
+
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

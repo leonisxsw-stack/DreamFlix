@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamFlix — Documents Légaux</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        .legal-container {
+            max-width: 900px;
+            margin: 100px auto;
+            padding: 40px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            line-height: 1.8;
+            color: #ccc;
+        }
+        h1 { color: #fff; font-size: 2.5rem; margin-bottom: 40px; font-weight: 900; }
+        h2 { color: var(--brand); font-size: 1.5rem; margin-top: 50px; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid rgba(229, 9, 20, 0.2); padding-bottom: 10px; }
+        h3 { color: #fff; font-size: 1.2rem; margin-top: 30px; margin-bottom: 15px; font-weight: 700; }
+        p { margin-bottom: 20px; }
+        ul { margin-bottom: 20px; padding-left: 20px; }
+        li { margin-bottom: 10px; }
+        .back-nav {
+            position: fixed; top: 30px; left: 30px;
+            display: flex; align-items: center; gap: 10px;
+            color: #fff; text-decoration: none; font-weight: 700;
+            background: rgba(0,0,0,0.5); padding: 10px 20px;
+            border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px); transition: 0.2s;
+        }
+        .back-nav:hover { background: var(--brand); border-color: var(--brand); }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-nav"><i class="fas fa-arrow-left"></i> Retour à DreamFlix</a>
+
+    <div class="legal-container">
+        <h1>Documents Légaux</h1>
+
+        <section id="cgu">
+            <h2>2. Conditions Générales d’Utilisation (CGU)</h2>
+            <p>Ce document définit les règles entre DreamFlix et ses utilisateurs.</p>
+
+            <h3>Article 1 : Objet</h3>
+            <p>Les présentes CGU ont pour objet de définir les modalités de mise à disposition du site Dreamflix et les conditions d'utilisation par l'Utilisateur.</p>
+
+            <h3>Article 2 : Accès au service (Compte Google)</h3>
+            <p>L'accès au service de streaming nécessite la création d'un compte via l'authentification Google Sign-In.</p>
+            <ul>
+                <li>L'utilisateur est responsable de la sécurité de son compte Google.</li>
+                <li>L'éditeur s'engage à ne collecter que les données strictement nécessaires (Nom, Prénom, Email, Photo de profil).</li>
+            </ul>
+
+            <h3>Article 3 : Propriété Intellectuelle et Contenu IA</h3>
+            <p>DreamFlix est une plateforme unique basée sur l'innovation :</p>
+            <ul>
+                <li><strong>Nature du contenu :</strong> L'utilisateur reconnaît que les vidéos diffusées sur Dreamflix sont généréee par des systèmes d'Intelligence Artificielle.</li>
+                <li><strong>Droits d'auteur :</strong> Sauf mention contraire, l'intégralité du contenu (vidéos, logos, interface) est la propriété exclusive de Dreamflix.</li>
+                <li><strong>Avertissement :</strong> Le contenu étant généré par IA, Dreamflix ne peut garantir l'exactitude absolue des faits représentés ou l'absence de biais involontaires dans les images produites.</li>
+            </ul>
+
+            <h3>Article 4 : Suppression de compte</h3>
+            <p>Conformément à la réglementation, l'utilisateur dispose d'un droit de suppression :</p>
+            <ul>
+                <li>L'utilisateur peut se déconnecter à tout moment.</li>
+                <li>Une option "Supprimer mon compte" est disponible dans les paramètres. Cette action entraîne la suppression définitive de toutes les données personnelles associées dans un délai de 30 jours.</li>
+            </ul>
+
+            <h3>Article 5 : Responsabilité</h3>
+            <p>Dreamflix s'efforce d'assurer un accès 24h/24 mais ne peut être tenu responsable des interruptions de service liées à la maintenance ou aux pannes de serveurs tiers.</p>
+        </section>
+
+        <section id="rgpd">
+            <h2>3. Politique de Confidentialité (RGPD)</h2>
+            <p>Crucial puisque nous utilisons Google Auth pour votre confort et votre sécurité.</p>
+
+            <h3>Collecte des données</h3>
+            <p>Nous collectons les données via Google pour :</p>
+            <ul>
+                <li>Identifier l'utilisateur de manière unique.</li>
+                <li>Personnaliser l'expérience de streaming.</li>
+                <li>Assurer la sécurité des accès.</li>
+            </ul>
+
+            <h3>Durée de conservation</h3>
+            <p>Les données sont conservées tant que le compte est actif. En cas d'inactivité prolongée de 2 ans ou sur demande de suppression, les données sont effacées.</p>
+
+            <h3>Vos Droits</h3>
+            <p>Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Contactez-nous à : <strong>vibecode.ai.emails@gmail.com</strong>.</p>
+        </section>
+    </div>
+
+</body>
+</html>

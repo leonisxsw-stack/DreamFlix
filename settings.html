@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DreamFlix — Paramètres</title>
+    
+    <!-- PWA & Mobile Optimization -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="img/logo_dreamflix.png">
+    <meta name="theme-color" content="#E50914">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lenis@1.1.2/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div id="sidebar-placeholder"></div>
+
+<div class="df-page df-page-with-sidebar">
+    <div class="page-shell">
+        <h1>Paramètres</h1>
+        <p class="page-subtitle">Gérez votre compte DreamFlix</p>
+
+        <div style="max-width:640px">
+
+            <!-- Profil -->
+            <div class="settings-section">
+                <h3>Profil</h3>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Nom d'affichage</div>
+                        <div class="settings-sub" id="display-name-val">Utilisateur</div>
+                    </div>
+                    <button class="btn-pill btn-pill-ghost" style="padding:8px 20px;font-size:0.8rem" onclick="handleNicknameChange()">Modifier</button>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">E-mail</div>
+                        <div class="settings-sub" id="email-val">utilisateur@dreamflix.ai</div>
+                    </div>
+                    <button class="btn-pill btn-pill-ghost" style="padding:8px 20px;font-size:0.8rem">Modifier</button>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Formule</div>
+                        <div class="settings-sub" id="formule-val">Normal</div>
+                    </div>
+                    <span style="color:#46d369;font-size:0.8rem;font-weight:700">Actif</span>
+                </div>
+            </div>
+
+            <!-- Lecture -->
+            <div class="settings-section">
+                <h3>Lecture</h3>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Lecture automatique</div>
+                        <div class="settings-sub">Lance automatiquement l'épisode suivant</div>
+                    </div>
+                    <label class="sw-label">
+                        <input type="checkbox" id="autoplay-toggle" onchange="updateProfileSetting('autoplay_enabled', this.checked)">
+                        <div class="custom-switch"></div>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Sous-titres</div>
+                        <div class="settings-sub">Afficher les sous-titres par défaut</div>
+                    </div>
+                    <label class="sw-label">
+                        <input type="checkbox" id="subtitles-toggle" onchange="updateProfileSetting('subtitles_enabled', this.checked)">
+                        <div class="custom-switch"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="settings-section">
+                <h3>Notifications</h3>
+                
+                <!-- NEW: System Auth Check -->
+                <div class="settings-row" style="background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05)">
+                    <div style="flex:1">
+                        <div class="settings-label">Système de Notifications PUSH</div>
+                        <div class="settings-sub" id="push-status-text">Vérifiez si votre navigateur autorise les alertes DreamFlix.</div>
+                    </div>
+                    <button id="btn-auth-push" class="btn-pill btn-pill-white" style="font-size:0.75rem; padding:8px 15px" onclick="requestPushAuth()">
+                        VÉRIFIER LE STATUT
+                    </button>
+                </div>
+
+                <div class="settings-row" id="notif-episodes-row">
+                    <div>
+                        <div class="settings-label">Nouveaux épisodes <i class="fas fa-crown" style="color:#FFD700; font-size:0.7rem; margin-left:5px"></i></div>
+                        <div class="settings-sub" id="notif-episodes-sub">Notifier lors de la sortie d'un nouvel épisode (GOLD)</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px">
+                        <label class="cb-label" id="notif-episodes-label">
+                            <input type="checkbox" id="notif-episodes-toggle" onchange="updateProfileSetting('notifications_episodes', this.checked)">
+                            <div class="custom-checkbox"></div>
+                        </label>
+                        <button id="btn-test-notif" class="btn-pill btn-pill-ghost" style="font-size:0.65rem; padding:4px 8px; display:none" onclick="sendTestNotif()">Tester</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Access -->
+            <div class="settings-section" id="admin-unlock-section">
+                <h3>Accès Admin</h3>
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Code d'administration</div>
+                        <div class="settings-sub">Entrez le code secret pour débloquer le panneau</div>
+                    </div>
+                    <div style="display:flex;gap:10px">
+                        <input type="password" id="admin-code-input" class="form-input" style="width:120px;padding:8px 12px;font-size:0.8rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;outline:none" placeholder="******">
+                        <button class="btn-pill btn-pill-white" style="padding:8px 15px;font-size:0.8rem" onclick="handleAdminUnlock()">Débloquer</button>
+                    </div>
+                </div>
+                <div id="admin-status-msg" style="margin-top:10px;font-size:0.75rem;display:none"></div>
+            </div>
+
+            <!-- Compte -->
+            <div class="settings-section">
+                <h3>Compte</h3>
+                <div class="settings-row">
+                    <div class="settings-label">Se déconnecter</div>
+                    <button class="btn-pill btn-pill-ghost" style="padding:8px 20px;font-size:0.8rem;color:#E50914;border:1px solid #E50914" id="settings-logout-btn">Déconnexion</button>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="settings-section" style="border-top: 1px solid rgba(229, 9, 20, 0.2); margin-top: 50px; padding-top: 30px;">
+                <h3 style="color:#ff4444"><i class="fas fa-exclamation-triangle"></i> Zone de Danger</h3>
+                <div class="settings-row" style="flex-direction:column; align-items:flex-start; gap:15px">
+                    <div>
+                        <div class="settings-label" style="color:#fff">Supprimer le compte définitivement</div>
+                        <div class="settings-sub">Cette action est irréversible. Toutes vos données seront effacées sous 30 jours.</div>
+                    </div>
+                    
+                    <div id="delete-confirm-box" style="width:100%; display:none; flex-direction:column; gap:10px; padding:15px; background:rgba(229, 9, 20, 0.1); border-radius:12px; border:1px solid rgba(229, 9, 20, 0.2)">
+                        <div style="font-size:0.8rem; color:#ffbaba">Veuillez taper <strong>"suprimer"</strong> pour confirmer :</div>
+                        <input type="text" id="delete-confirm-input" class="form-input" style="width:100%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid rgba(229,9,20,0.5); border-radius:8px; color:#fff; outline:none" placeholder="suprimer">
+                        <button class="btn-pill" style="background:#E50914; color:#fff; width:100%; padding:10px" onclick="confirmFinalDelete()">CONFIRMER LA SUPPRESSION</button>
+                    </div>
+
+                    <button class="btn-pill btn-pill-ghost" style="color:#ff4444; border-color:#ff4444; font-size:0.8rem" id="show-delete-btn" onclick="document.getElementById('delete-confirm-box').style.display='flex'; this.style.display='none'">Supprimer mon compte</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="nav.js"></script>
+<script src="script.js"></script>
+
+<script>
+    // Force authentication for the settings page
+    if (!DFAuth.requireAuth()) {
+        throw new Error("Authentication required"); 
+    }
+
+    // Load User Data
+    window.addEventListener('load', async () => {
+        const user = DFAuth.getUser();
+        if (user) {
+            document.getElementById('display-name-val').innerText = user.name;
+            document.getElementById('email-val').innerText = user.email;
+            
+            // Fetch subscription & refresh name & settings
+            const { data: profile } = await DFAuth._supabase.from('profiles').select('*').eq('id', user.sub).single();
+            if (profile) {
+                const type = profile.subscription_type || 'FREE';
+                document.getElementById('formule-val').innerText = type === 'DIAMANT' ? 'DIAMANT PRO' : (type === 'GOLD' ? 'GOLD' : 'Normal');
+                document.getElementById('display-name-val').innerText = profile.full_name;
+
+                // Populate Toggles
+                setToggle('autoplay-toggle', profile.autoplay_enabled);
+                setToggle('subtitles-toggle', profile.subtitles_enabled);
+
+                // Gold Restriction for Notifications
+                const isGoldPlus = (type === 'GOLD' || type === 'DIAMANT');
+                if (!isGoldPlus) {
+                    const row = document.getElementById('notif-episodes-row');
+                    const toggle = document.getElementById('notif-episodes-toggle');
+                    const label = document.getElementById('notif-episodes-label');
+                    if (row) row.style.opacity = '0.5';
+                    if (toggle) toggle.disabled = true;
+                    if (label) label.style.cursor = 'not-allowed';
+                    document.getElementById('notif-episodes-sub').innerHTML += " <span style='color:var(--brand);font-weight:700'>[RESERVÉ GOLD]</span>";
+                } else {
+                    setToggle('notif-episodes-toggle', profile.notifications_episodes);
+                    document.getElementById('btn-test-notif').style.display = 'block';
+                }
+            }
+        }
+
+        if (DFAuth.isAdmin()) {
+            document.getElementById('admin-unlock-section').style.display = 'none';
+        }
+
+        // Check Push Status immediately
+        checkPushStatus();
+    });
+
+    function checkPushStatus() {
+        const btn = document.getElementById('btn-auth-push');
+        const text = document.getElementById('push-status-text');
+        if (!btn || !text) return;
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+        // --- iOS Special Handling ---
+        if (isIOS && !isStandalone) {
+            text.innerHTML = '<span style="color:var(--brand);font-weight:700"><i class="fas fa-info-circle"></i> État : Site Web</span><br>Apple requiert que vous installiez l\'app pour activer les notifications.';
+            btn.innerHTML = '<i class="fas fa-plus-square"></i> Installer DreamFlix';
+            btn.onclick = () => alert("Tapez sur l'icône de Partage (en bas de Safari) puis sélectionnez 'Sur l'écran d'accueil' pour débloquer les notifications.");
+            btn.className = "btn-pill btn-pill-white";
+            return;
+        }
+
+        if (!("Notification" in window) && !('serviceWorker' in navigator)) {
+            text.innerText = "Navigateur non compatible sur cette platforme.";
+            btn.style.display = 'none';
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            text.innerHTML = '<span style="color:#46d369;font-weight:700">Autorisé ✅</span> — Vous recevrez les alertes sur cet appareil.';
+            btn.innerText = "TESTER LA RÉCEPTION";
+            btn.onclick = sendTestNotif;
+            btn.className = "btn-pill btn-pill-ghost";
+        } else if (Notification.permission === 'denied') {
+            text.innerHTML = '<span style="color:#ff4444;font-weight:700">Bloqué ❌</span> — Activez les notifs dans les réglages du navigateur.';
+            btn.innerText = "DÉBLOQUER";
+            btn.onclick = () => alert("Veuillez réinitialiser les permissions de DreamFlix dans la barre d'adresse de votre navigateur pour continuer.");
+        } else {
+            text.innerText = "Autorisez DreamFlix pour recevoir les alertes instantanées.";
+            btn.innerText = "ACTIVER SUR MON APPAREIL";
+            btn.onclick = requestPushAuth;
+        }
+    }
+
+    async function requestPushAuth() {
+        const permission = await Notification.requestPermission();
+        checkPushStatus();
+        if (permission === 'granted') {
+            DFNotif.sendLocal("DreamFlix", "Les notifications OS sont maintenant actives ! 🍿");
+        }
+    }
+
+    function setToggle(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.checked = !!val;
+        if (val) el.nextElementSibling.classList.add('active');
+        else el.nextElementSibling.classList.remove('active');
+        
+        // Handle checkbox case (notifications)
+        if (el.type === 'checkbox' && id.includes('notif')) {
+            if (val) el.parentElement.classList.add('active');
+            else el.parentElement.classList.remove('active');
+        }
+    }
+
+    async function updateProfileSetting(column, value) {
+        if (!DFAuth.canInteract()) return;
+        const user = DFAuth.getUser();
+        
+        // NEW: Handle Notification Permission
+        if (column === 'notifications_episodes' && value === true) {
+            DFNotif.requestPermission(() => {
+                DFNotif.sendLocal("DreamFlix", "Les notifications sont activées !");
+            });
+        }
+
+        // Visual feedback
+        const el = document.getElementById(window.event.target.id);
+        if (el && el.nextElementSibling) el.nextElementSibling.style.opacity = '0.5';
+
+        const { error } = await DFAuth._supabase.from('profiles').update({
+            [column]: value
+        }).eq('id', user.sub);
+
+        if (el && el.nextElementSibling) el.nextElementSibling.style.opacity = '1';
+
+        if (error) {
+            alert("Erreur de sauvegarde: " + error.message);
+        } else {
+            console.log(`Setting ${column} updated to ${value}`);
+            // Sync visual classes
+            if (el.id.includes('toggle')) {
+                if (value) el.nextElementSibling.classList.add('active');
+                else el.nextElementSibling.classList.remove('active');
+                
+                if (el.parentElement.classList.contains('cb-label')) {
+                    if (value) el.parentElement.classList.add('active');
+                    else el.parentElement.classList.remove('active');
+                }
+            }
+        }
+    }
+
+    // Nickname Change logic
+    async function handleNicknameChange() {
+        if (!DFAuth.canInteract()) return;
+        const user = DFAuth.getUser();
+        
+        const { data: profile, error: fetchError } = await DFAuth._supabase.from('profiles').select('last_name_change_at').eq('id', user.sub).single();
+        
+        if (profile && profile.last_name_change_at) {
+            const lastChange = new Date(profile.last_name_change_at);
+            const now = new Date();
+            const diffDays = Math.floor((now - lastChange) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 14) {
+                alert(`[PRESTIGE] Vous ne pouvez changer de pseudo que tous les 14 jours. Revenez dans ${14 - diffDays} jours.`);
+                return;
+            }
+        }
+
+        const newName = prompt("Entrez votre nouveau pseudo (Visible sur le Classement) :");
+        if (!newName || newName.trim().length < 2) return;
+        if (newName.length > 20) return alert("Pseudonyme trop long (Max 20 caract.)");
+
+        const { error } = await DFAuth._supabase.from('profiles').update({
+            full_name: newName,
+            last_name_change_at: new Date().toISOString()
+        }).eq('id', user.sub);
+
+        if (error) {
+            alert('Erreur: ' + error.message);
+        } else {
+            alert('Pseudo mis à jour avec succès !');
+            // Update local session
+            localStorage.setItem('df_user', JSON.stringify({ ...user, name: newName }));
+            location.reload();
+        }
+    }
+
+    // Handle Logout
+    document.getElementById('settings-logout-btn').addEventListener('click', () => {
+        if(confirm('Se déconnecter de DreamFlix ?')) {
+            DFAuth.logOut();
+        }
+    });
+
+    // Admin Unlock Logic
+    function handleAdminUnlock() {
+        const input = document.getElementById('admin-code-input');
+        const msg = document.getElementById('admin-status-msg');
+        const code = input.value;
+
+        if (DFAuth.tryUnlockAdmin(code)) {
+            msg.style.display = 'block';
+            msg.style.color = '#46d369';
+            msg.innerHTML = '<i class="fas fa-check-circle"></i> Admin Panel débloqué ! Rechargez la page.';
+            setTimeout(() => { location.reload(); }, 1000);
+        } else {
+            msg.style.display = 'block';
+            msg.style.color = '#ff4444';
+            msg.innerHTML = '<i class="fas fa-times-circle"></i> Code incorrect.';
+        }
+    }
+
+    // Account Deletion Final Confirmation
+    function confirmFinalDelete() {
+        const input = document.getElementById('delete-confirm-input').value;
+        if (input === 'suprimer') {
+            if (confirm('ÊTES-VOUS ABSOLUMENT SÛR ? Cette action supprimera définitivement vos données.')) {
+                DFAuth.deleteAccount();
+            }
+        } else {
+            alert('Veuillez taper "suprimer" correctement pour confirmer.');
+        }
+    }
+
+    function sendTestNotif() {
+        if (Notification.permission === 'granted') {
+            DFNotif.sendLocal("DreamFlix", "Ceci est un test de notification Premium ! 🍿");
+        } else {
+            DFNotif.requestPermission(() => DFNotif.sendLocal("DreamFlix", "Test réussi !"));
+        }
+    }
+</script>
+
+</body>
+</html>

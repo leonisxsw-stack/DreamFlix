@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamFlix — Series</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lenis@1.1.2/dist/lenis.min.js"></script>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div id="sidebar-placeholder"></div>
+
+<div class="df-page df-page-with-sidebar">
+    <div class="page-shell">
+        <h1>Series</h1>
+        <p class="page-subtitle">All DreamFlix Original Series</p>
+
+        <div class="chips" id="category-chips">
+            <div class="chip active" data-cat="All">All</div>
+            <div class="chip" data-cat="Action">Action</div>
+            <div class="chip" data-cat="Drama">Drama</div>
+            <div class="chip" data-cat="Sci-Fi">Sci-Fi</div>
+            <div class="chip" data-cat="Comedy">Comedy</div>
+            <div class="chip" data-cat="Thriller">Thriller</div>
+        </div>
+
+        <div class="df-grid" id="series-grid">
+            <!-- Dynamic items here -->
+        </div>
+
+        <div class="empty-state" id="empty-series" style="display:none">
+            <div class="icon" style="font-size: 5rem;">🎬</div>
+            <h3>Aucune série trouvée</h3>
+            <p>Nous n'avons pas encore de séries dans cette catégorie. Revenez bientôt !</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script src="nav.js"></script>
+<script src="script.js"></script>
+
+<script>
+    let allSeries = [];
+
+    async function loadSeries() {
+        if (typeof DFAuth === 'undefined' || !DFAuth._supabase) return;
+        const _sb = DFAuth._supabase;
+        const { data, error } = await _sb.from('content').select('*').eq('category', 'Series').order('created_at', { ascending: false });
+        
+        allSeries = data || [];
+        
+        // Manually Inject Skibidi TentaFruit (Original)
+        allSeries.unshift({
+            id: 'skibidi-tentafruit',
+            title: "L'Île de la Skibiditentafruit",
+            image_url: 'img/fruit image.jpg',
+            category: 'Série Originale',
+            year: 2026,
+            video_url: 'watch.html'
+        });
+
+        renderSeries('All');
+    }
+
+    function renderSeries(filter = 'All') {
+        const grid = document.getElementById('series-grid');
+        const empty = document.getElementById('empty-series');
+        grid.innerHTML = '';
+
+        const filtered = filter === 'All' ? allSeries : allSeries.filter(s => s.title && s.title.toLowerCase().includes(filter.toLowerCase())); // Note: category tags aren't in content table yet, using title match or placeholder
+        
+        // Actually, let's just filter by a more realistic way or show all if 'All'
+        const finalData = filter === 'All' ? allSeries : []; // Placeholder category filtering
+
+        if (allSeries.length === 0) {
+            empty.style.display = 'block';
+            grid.style.display = 'none';
+        } else {
+            empty.style.display = 'none';
+            grid.style.display = 'grid';
+            allSeries.forEach(item => {
+                grid.appendChild(DFAuth.UI.createCard(item, true));
+            });
+        }
+    }
+
+    // Chips logic
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            renderSeries(chip.dataset.cat);
+        });
+    });
+
+    window.addEventListener('load', loadSeries);
+</script>
+</body>
+</html>
