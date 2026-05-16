@@ -6,9 +6,8 @@ const SESSION_KEY = 'df_user';
 const ADMIN_EMAIL = 'leoazex20@gmail.com';
 
 // Supabase Configuration (Public Anon Key)
-const SUPABASE_URL = "https://pcmaxibgvpatazpxuqkd.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjbWF4aWJndnBhdGF6cHh1cWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTA1MzAsImV4cCI6MjA5MDEyNjUzMH0.-hqsL58wE8DT6S7biILN_R88BXaQCY_8i9AwsLVHG6c";
-
+const SUPABASE_URL = "https://brfnlhatguohkiiucdes.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_B-6pEvZ4JbJAF6KFLuoHrg_TqvBXdmH";
 // Obfuscated Admin Secret (Base64 mtq1njm5nq==)
 const ADMIN_CHECK = "MTQ1NjM5NQ=="; 
 
