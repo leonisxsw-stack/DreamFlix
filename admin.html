@@ -210,12 +210,14 @@
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                         <div class="form-group">
-                            <label class="form-label">Thumbnail (JPG/PNG)</label>
+                            <label class="form-label">Thumbnail (File or URL)</label>
                             <input type="file" id="thumb-file" class="form-input" accept="image/*">
+                            <input type="url" id="thumb-url" class="form-input" placeholder="Or enter Image URL" style="margin-top: 10px;">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Video (MP4)</label>
+                            <label class="form-label">Video (File or URL)</label>
                             <input type="file" id="video-file" class="form-input" accept="video/mp4">
+                            <input type="url" id="video-url" class="form-input" placeholder="Or enter MP4 direct URL" style="margin-top: 10px;">
                         </div>
                     </div>
 
@@ -577,15 +579,17 @@
             fill.style.width = '30%';
 
             const thumbFile = document.getElementById('thumb-file').files[0];
+            const thumbUrlInput = document.getElementById('thumb-url').value.trim();
             const videoFile = document.getElementById('video-file').files[0];
+            const videoUrlInput = document.getElementById('video-url').value.trim();
 
-            let imageUrl = null;
-            let videoUrl = null;
+            let imageUrl = thumbUrlInput || null;
+            let videoUrl = videoUrlInput || null;
 
-            if (thumbFile) imageUrl = await uploadFile(thumbFile, 'thumbnails');
+            if (!imageUrl && thumbFile) imageUrl = await uploadFile(thumbFile, 'thumbnails');
             fill.style.width = '60%';
             
-            if (videoFile) videoUrl = await uploadFile(videoFile, 'videos');
+            if (!videoUrl && videoFile) videoUrl = await uploadFile(videoFile, 'videos');
             fill.style.width = '90%';
 
             const contentData = {
