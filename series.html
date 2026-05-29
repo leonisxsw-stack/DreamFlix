@@ -41,63 +41,27 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
+<script src="tmdb.js"></script>
 <script src="nav.js"></script>
 <script src="script.js"></script>
 
 <script>
-    let allSeries = [];
-
     async function loadSeries() {
-        if (typeof DFAuth === 'undefined' || !DFAuth._supabase) return;
-        const _sb = DFAuth._supabase;
-        const { data, error } = await _sb.from('content').select('*').eq('category', 'Series').order('created_at', { ascending: false });
-        
-        allSeries = data || [];
-        
-        // Manually Inject Skibidi TentaFruit (Original)
-        allSeries.unshift({
-            id: 'skibidi-tentafruit',
-            title: "L'Île de la Skibiditentafruit",
-            image_url: 'img/fruit image.jpg',
-            category: 'Série Originale',
-            year: 2026,
-            video_url: 'watch.html'
-        });
-
-        renderSeries('All');
-    }
-
-    function renderSeries(filter = 'All') {
         const grid = document.getElementById('series-grid');
         const empty = document.getElementById('empty-series');
         grid.innerHTML = '';
 
-        const filtered = filter === 'All' ? allSeries : allSeries.filter(s => s.title && s.title.toLowerCase().includes(filter.toLowerCase())); // Note: category tags aren't in content table yet, using title match or placeholder
-        
-        // Actually, let's just filter by a more realistic way or show all if 'All'
-        const finalData = filter === 'All' ? allSeries : []; // Placeholder category filtering
+        const data = await TMDB.fetchSeries('popular');
 
-        if (allSeries.length === 0) {
+        if (!data || data.length === 0) {
             empty.style.display = 'block';
             grid.style.display = 'none';
         } else {
             empty.style.display = 'none';
             grid.style.display = 'grid';
-            allSeries.forEach(item => {
-                grid.appendChild(DFAuth.UI.createCard(item, true));
-            });
+            grid.innerHTML = data.map(item => TMDB.createCardHTML(item, 'tv')).join('');
         }
     }
-
-    // Chips logic
-    document.querySelectorAll('.chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            renderSeries(chip.dataset.cat);
-        });
-    });
-
     window.addEventListener('load', loadSeries);
 </script>
 </body>

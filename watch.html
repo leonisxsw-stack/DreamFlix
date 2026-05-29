@@ -162,119 +162,75 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
+    <script src="tmdb.js"></script>
     <script>
-        // Force authentication for the player page
-        if (!DFAuth.requireAuth()) {
-            // Stop execution if not logged in
-            throw new Error("Authentication required"); 
-        }
+        // Force authentication
+        if (!DFAuth.requireAuth()) throw new Error("Authentication required"); 
 
-        // Data for available episodes
-        const EPISODES = [
-            { num: 1,  id: '11fw23sowu', title: 'Le début de la tentation', img: 'img/ep1.png' },
-            { num: 2,  id: 'sus4nihbct', title: 'Smoothies fatals', img: 'img/ep2.png' },
-            { num: 3,  id: 'k9ebfe9p7t', title: 'Bananito voit rouge', img: 'img/ep3.png' },
-            { num: 4,  id: 'xfvs6sgxl8', title: 'Trahison fruitée', img: 'img/ep4.png' },
-            { num: 6,  id: 'qp3b52ule9', title: 'Le retour du ver', img: 'img/ep6.png' },
-            { num: 7,  id: 'vyp8uc535n', title: 'La villa explose', img: 'img/ep7.png' },
-            { num: 8,  id: 'd3z3tvibaq', title: 'Pomita en larmes', img: 'img/ep8.png' },
-            { num: 9,  id: 'wdefzrrk8o', title: 'Choc exotique', img: 'img/ep9.png' },
-            { num: 10, id: '0fzex7oke7', title: 'Clash acidulé', img: 'img/ep10.png' },
-            { num: 11, id: 'pgv4soog38', title: 'Cerise sur le gâteau', img: 'img/ep11.png' },
-            { num: 12, id: '5kuqfb5f3z', title: 'Le grand mix', img: 'img/ep12.png' },
-            { num: 14, id: '8370hytydw', title: 'Presque la fin', img: 'img/ep14.png' },
-            { num: 15, id: 'd3m3z3rqo3', title: 'L\'avant-dernier jus', img: 'img/ep15.png' },
-            { num: 16, id: 'vb87gw39la', title: 'Finale en salade', img: 'img/ep16.png' }
-        ];
+        const urlParams = new URLSearchParams(window.location.search);
+        const tmdbId = urlParams.get('id') || '533535'; // Default to Deadpool if none
+        const type = urlParams.get('type') || 'movie';
 
         const listContainer = document.getElementById('sidebar-list');
         const playerContainer = document.getElementById('main-player-container');
-        let activeEpIndex = 0;
 
-        // --- Render Sidebar ---
-        function renderSidebar() {
-            listContainer.innerHTML = '';
-            EPISODES.forEach((ep, i) => {
-                const li = document.createElement('li');
-                li.className = `ep-item ${i === activeEpIndex ? 'active' : ''}`;
-                li.onclick = () => switchEpisode(i);
-                li.innerHTML = `
-                    <div class="ep-thumb">
-                        <img src="${ep.img}" alt="Episode ${ep.num}">
-                        <i class="fas fa-play"></i>
-                    </div>
-                    <div class="ep-info" style="flex:1">
-                        <div style="display:flex;justify-content:space-between;align-items:center">
-                            <div class="ep-num">Épisode ${ep.num}</div>
-                        </div>
-                        <div class="ep-title">${ep.title}</div>
-                        <div class="ep-duration">2-3 min</div>
-                    </div>
-                `;
-                listContainer.appendChild(li);
-            });
-        }
-
-        // Initial Load with Deep Linking
-        const urlParams = new URLSearchParams(window.location.search);
-        const startEp = parseInt(urlParams.get('ep'));
-        if (startEp) {
-            const idx = EPISODES.findIndex(e => e.num === startEp);
-            if (idx !== -1) activeEpIndex = idx;
-        }
-
-        renderSidebar();
-
-        renderSidebar();
-
-        // --- Switch Video Logic ---
-        function switchEpisode(index) {
-            activeEpIndex = index;
-            const ep = EPISODES[activeEpIndex];
-            
-            // Clean player area
+        async function loadContent() {
+            // 1. Load Player
             playerContainer.innerHTML = '';
-            
-            // Inject new Wistia Embed
-            const scriptEmbed = document.createElement('script');
-            scriptEmbed.src = `https://fast.wistia.com/embed/${ep.id}.js`;
-            scriptEmbed.async = true;
-            scriptEmbed.setAttribute('type', 'module');
-            
-            const playerTag = document.createElement('wistia-player');
-            playerTag.setAttribute('media-id', ep.id);
-            playerTag.setAttribute('aspect', '0.5625');
-            
-            playerContainer.appendChild(scriptEmbed);
-            playerContainer.appendChild(playerTag);
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://vidsrc.me/embed/${type}?tmdb=${tmdbId}`;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.setAttribute('allowfullscreen', 'true');
+            playerContainer.appendChild(iframe);
 
-            renderSidebar();
-            attachApiListener();
+            // 2. Load Sidebar Info
+            const details = await TMDB.fetchDetails(tmdbId, type);
+            if (details) {
+                document.querySelector('.sidebar-header h2').innerText = details.title || details.name;
+                document.querySelector('.sidebar-header p').innerText = details.overview ? details.overview.substring(0, 100) + '...' : 'Streaming illimité';
+            } else {
+                document.querySelector('.sidebar-header h2').innerText = "DreamFlix Streaming";
+                document.querySelector('.sidebar-header p').innerText = "Streaming illimité";
+            }
+
+            // 3. Load Recommendations in Sidebar
+            try {
+                const res = await fetch(`${TMDB_BASE_URL}/${type}/${tmdbId}/recommendations?api_key=${TMDB_API_KEY}&language=fr-FR`);
+                const data = await res.json();
+                const recs = data.results || [];
+                
+                listContainer.innerHTML = '';
+                recs.slice(0, 10).forEach((item, i) => {
+                    const li = document.createElement('li');
+                    li.className = 'ep-item';
+                    li.onclick = () => window.location.href = `watch.html?id=${item.id}&type=${type}`;
+                    
+                    const img = item.poster_path ? `${TMDB_IMG_URL}${item.poster_path}` : 'https://via.placeholder.com/100x160';
+                    const title = item.title || item.name;
+
+                    li.innerHTML = `
+                        <div class="ep-thumb">
+                            <img src="${img}" alt="${title}">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="ep-info" style="flex:1">
+                            <div style="display:flex;justify-content:space-between;align-items:center">
+                                <div class="ep-num">Recommandé</div>
+                            </div>
+                            <div class="ep-title" style="font-size:0.85rem">${title}</div>
+                        </div>
+                    `;
+                    listContainer.appendChild(li);
+                });
+            } catch(e) { console.error(e); }
         }
 
-        function attachApiListener() {
-            window._wq = window._wq || [];
-            _wq.push({
-                id: "_all",
-                onReady: function(video) {
-                    video.bind("play", () => { });
-                    video.bind("pause", () => { });
-                    video.bind("seek", () => { });
-                    video.bind("end", function() {
-                        console.log("EP Finished, loading next...");
-                        if (activeEpIndex < EPISODES.length - 1) {
-                            switchEpisode(activeEpIndex + 1);
-                        }
-                    });
-                }
-            });
-        }
+        loadContent();
 
-        // --- FINAL INIT ---
-        switchEpisode(activeEpIndex);
-
-        // Handle navigation protection
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function() { window.history.go(1); };
     </script>
