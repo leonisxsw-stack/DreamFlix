@@ -549,17 +549,27 @@
         if (!error) loadContent();
     }
 
-    async function uploadFile(file, bucket) {
+    async function uploadFile(file) {
         if (!file) return null;
-        const ext = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${ext}`;
-        const filePath = fileName;
+        
+        const formData = new FormData();
+        formData.append('file', file);
 
-        const { data, error } = await _sb.storage.from(bucket).upload(filePath, file);
-        if (error) throw error;
-
-        const { data: { publicUrl } } = _sb.storage.from(bucket).getPublicUrl(filePath);
-        return publicUrl;
+        try {
+            const response = await fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || 'Erreur d\'upload');
+            
+            // Retourne l'URL locale fournie par ton serveur (ex: http://localhost:3000/media/film.mp4)
+            return data.url;
+        } catch (error) {
+            console.error(error);
+            throw new Error("Impossible de joindre le serveur local. As-tu tapé 'node server.js' dans ton terminal ?");
+        }
     }
 
     document.getElementById('add-content-form').addEventListener('submit', async (e) => {
@@ -575,7 +585,7 @@
         progress.style.display = 'block';
         
         try {
-            status.innerText = 'Uploading files...';
+            status.innerText = 'Upload vers le serveur local en cours (Patientez pour les gros fichiers)...';
             fill.style.width = '30%';
 
             const thumbFile = document.getElementById('thumb-file').files[0];
@@ -586,10 +596,10 @@
             let imageUrl = thumbUrlInput || null;
             let videoUrl = videoUrlInput || null;
 
-            if (!imageUrl && thumbFile) imageUrl = await uploadFile(thumbFile, 'thumbnails');
+            if (!imageUrl && thumbFile) imageUrl = await uploadFile(thumbFile);
             fill.style.width = '60%';
             
-            if (!videoUrl && videoFile) videoUrl = await uploadFile(videoFile, 'videos');
+            if (!videoUrl && videoFile) videoUrl = await uploadFile(videoFile);
             fill.style.width = '90%';
 
             const contentData = {
